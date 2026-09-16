@@ -1,3 +1,7 @@
+Here is the updated README, reflecting that the current placeholder image is `img15.jpg` and that it can be changed. The QR code section now uses your actual hosted URL (`https://greggelong.github.io/jdzQR/`) and includes all 15 stage codes with the correct trailing slash. Both English and Chinese are provided.
+
+---
+
 # Museum Collection Game – README
 
 ## English
@@ -17,14 +21,14 @@ This is a QR‑code driven scavenger hunt where players restore a damaged museum
 
 ### ⚠️ Current image is a placeholder
 
-The image used right now is a **placeholder** from `picsum.photos`.  
+The image currently used is **`img15.jpg`**, a placeholder that ships with the project.  
 **The design team will provide the final artwork.**  
 To replace it:
 
-1. Put the new image in the same folder as the HTML file.
+1. Put your new image in the same folder as the HTML file.
 2. Open the HTML file and find:
    ```js
-   const ARTWORK_URL = "https://picsum.photos/seed/kintsugi/1500/1500";
+   const ARTWORK_URL = "img15.jpg";
    ```
 3. Change it to your filename, e.g.:
    ```js
@@ -37,36 +41,38 @@ Any aspect ratio works, but a square image gives the best result.
 ### Creating QR codes
 
 Each QR code must contain the **full URL** of the page plus `?stage=CODE`.  
-Example:
+Your game is hosted at:  
+**`https://greggelong.github.io/jdzQR/`**
 
-```
-https://yourdomain.com/museum/index.html?stage=1a
-```
+The 15 full URLs are:
 
-Replace `https://yourdomain.com/museum/` with your actual hosted URL.  
-The 15 stage codes are:
-
-| Part | Codes            |
-| ---- | ---------------- |
-| I    | `1a`, `1b`, `1c` |
-| II   | `2a`, `2b`, `2c` |
-| III  | `3a`, `3b`, `3c` |
-| IV   | `4a`, `4b`, `4c` |
-| V    | `5a`, `5b`, `5c` |
+| Part | Code | Full URL                                       |
+| ---- | ---- | ---------------------------------------------- |
+| I    | 1a   | `https://greggelong.github.io/jdzQR/?stage=1a` |
+| I    | 1b   | `https://greggelong.github.io/jdzQR/?stage=1b` |
+| I    | 1c   | `https://greggelong.github.io/jdzQR/?stage=1c` |
+| II   | 2a   | `https://greggelong.github.io/jdzQR/?stage=2a` |
+| II   | 2b   | `https://greggelong.github.io/jdzQR/?stage=2b` |
+| II   | 2c   | `https://greggelong.github.io/jdzQR/?stage=2c` |
+| III  | 3a   | `https://greggelong.github.io/jdzQR/?stage=3a` |
+| III  | 3b   | `https://greggelong.github.io/jdzQR/?stage=3b` |
+| III  | 3c   | `https://greggelong.github.io/jdzQR/?stage=3c` |
+| IV   | 4a   | `https://greggelong.github.io/jdzQR/?stage=4a` |
+| IV   | 4b   | `https://greggelong.github.io/jdzQR/?stage=4b` |
+| IV   | 4c   | `https://greggelong.github.io/jdzQR/?stage=4c` |
+| V    | 5a   | `https://greggelong.github.io/jdzQR/?stage=5a` |
+| V    | 5b   | `https://greggelong.github.io/jdzQR/?stage=5b` |
+| V    | 5c   | `https://greggelong.github.io/jdzQR/?stage=5c` |
 
 Generate QR codes with any free tool (e.g., QR Code Generator, NFC Tools, Canva).  
 **Test one on your phone before printing.**
 
 ### Deployment
 
-Upload the HTML file and image to any static host:
+The game is already hosted on **GitHub Pages** at `https://greggelong.github.io/jdzQR/`.  
+To update the files, commit and push to the repository. No further setup is needed.
 
-- GitHub Pages
-- Netlify
-- Vercel
-- Any web server
-
-For **GitHub Pages**:
+For reference, the general steps for GitHub Pages are:
 
 1. Create a repository.
 2. Upload `index.html` and your image.
@@ -108,14 +114,14 @@ Click the **重置进度** button on the page, or clear the site’s `localStora
 
 ### ⚠️ 当前图片为占位图
 
-目前使用的图片是来自 `picsum.photos` 的**占位图**。  
+目前使用的图片是 **`img15.jpg`**，这是随项目提供的占位图。  
 **设计团队将提供最终的美术图片。**  
 替换方法：
 
 1. 将新图片放入与 HTML 文件相同的文件夹。
 2. 打开 HTML 文件，找到：
    ```js
-   const ARTWORK_URL = "https://picsum.photos/seed/kintsugi/1500/1500";
+   const ARTWORK_URL = "img15.jpg";
    ```
 3. 改为你的文件名，例如：
    ```js
@@ -128,36 +134,38 @@ Click the **重置进度** button on the page, or clear the site’s `localStora
 ### 生成二维码
 
 每个二维码必须包含页面的**完整 URL** 加上 `?stage=代码`。  
-示例：
+你的游戏托管在：  
+**`https://greggelong.github.io/jdzQR/`**
 
-```
-https://yourdomain.com/museum/index.html?stage=1a
-```
+15 个完整网址如下：
 
-请将 `https://yourdomain.com/museum/` 替换为你实际部署的网址。  
-15 个关卡代码如下：
-
-| 部分   | 代码             |
-| ------ | ---------------- |
-| 第一组 | `1a`、`1b`、`1c` |
-| 第二组 | `2a`、`2b`、`2c` |
-| 第三组 | `3a`、`3b`、`3c` |
-| 第四组 | `4a`、`4b`、`4c` |
-| 第五组 | `5a`、`5b`、`5c` |
+| 部分   | 代码 | 完整网址                                       |
+| ------ | ---- | ---------------------------------------------- |
+| 第一组 | 1a   | `https://greggelong.github.io/jdzQR/?stage=1a` |
+| 第一组 | 1b   | `https://greggelong.github.io/jdzQR/?stage=1b` |
+| 第一组 | 1c   | `https://greggelong.github.io/jdzQR/?stage=1c` |
+| 第二组 | 2a   | `https://greggelong.github.io/jdzQR/?stage=2a` |
+| 第二组 | 2b   | `https://greggelong.github.io/jdzQR/?stage=2b` |
+| 第二组 | 2c   | `https://greggelong.github.io/jdzQR/?stage=2c` |
+| 第三组 | 3a   | `https://greggelong.github.io/jdzQR/?stage=3a` |
+| 第三组 | 3b   | `https://greggelong.github.io/jdzQR/?stage=3b` |
+| 第三组 | 3c   | `https://greggelong.github.io/jdzQR/?stage=3c` |
+| 第四组 | 4a   | `https://greggelong.github.io/jdzQR/?stage=4a` |
+| 第四组 | 4b   | `https://greggelong.github.io/jdzQR/?stage=4b` |
+| 第四组 | 4c   | `https://greggelong.github.io/jdzQR/?stage=4c` |
+| 第五组 | 5a   | `https://greggelong.github.io/jdzQR/?stage=5a` |
+| 第五组 | 5b   | `https://greggelong.github.io/jdzQR/?stage=5b` |
+| 第五组 | 5c   | `https://greggelong.github.io/jdzQR/?stage=5c` |
 
 可使用任意免费工具生成二维码（如 QR Code Generator、NFC Tools、Canva）。  
 **打印前请先用手机测试。**
 
 ### 部署
 
-将 HTML 文件和图片上传到任何静态托管服务：
+游戏已托管在 **GitHub Pages** 上：`https://greggelong.github.io/jdzQR/`。  
+要更新文件，只需提交并推送到仓库即可，无需其他设置。
 
-- GitHub Pages
-- Netlify
-- Vercel
-- 任何 Web 服务器
-
-**GitHub Pages 步骤**：
+以下是 GitHub Pages 的通用步骤（供参考）：
 
 1. 创建一个仓库。
 2. 上传 `index.html` 和你的图片。
