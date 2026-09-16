@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>博物馆藏品游戏 · Museum Collection Game</title>
+    <style>
+        :root {
+            --paper: #f4f2ec;
+            --surface: #fbfaf7;
+            --slot: #ece9e1;
+            --ink: #2a2925;
+            --muted: #8f8a80;
+            --faint: #c3beb3;
+            --brass: #a8894f;
+            --brass-lite: #c9ab74;
+            --hairline: rgba(42, 41, 37, 0.13);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 0%, #fbf9f4 0%, var(--paper) 45%, #e9e6de 100%);
+            color: var(--ink);
+            /* Chinese serif first, then Latin serif fallbacks */
+            font-family: "Songti SC", "Source Han Serif SC", "Noto Serif SC",
+                "STSong", "SimSun", Georgia, "Times New Roman", serif;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 28px 22px 22px;
+            min-height: 100vh;
+        }
+
+        @supports (min-height: 100dvh) {
+            body {
+                min-height: 100dvh;
+            }
+        }
+
+        /* Shared "English secondary" style — small, spaced, uppercase */
+        .en {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 0.72em;
+            letter-spacing: 0.28em;
+            text-indent: 0.28em;
+            text-transform: uppercase;
+            color: var(--faint);
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* ---------- Masthead ---------- */
+        .masthead {
+            text-align: center;
+            line-height: 1;
+        }
+
+        .masthead h1 {
+            margin: 0;
+            font-size: 26px;
+            /* Chinese is the headline */
+            font-weight: normal;
+            letter-spacing: 0.28em;
+            text-indent: 0.28em;
+            color: var(--brass);
+        }
+
+        .masthead .rule {
+            width: 40px;
+            height: 1px;
+            background: var(--brass-lite);
+            opacity: 0.55;
+            margin: 14px auto 12px;
+        }
+
+        .masthead .subtitle {
+            font-family: Georgia, "Times New Roman", serif;
+            margin: 0;
+            font-size: 9.5px;
+            letter-spacing: 0.32em;
+            text-indent: 0.32em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        /* ---------- Board ---------- */
+        main {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .board {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            /* 3 columns */
+            grid-template-rows: repeat(5, 1fr);
+            /* 5 rows    */
+            gap: 2px;
+            background: var(--slot);
+            outline: 1px solid var(--hairline);
+            box-shadow:
+                0 30px 60px -32px rgba(42, 41, 37, 0.55),
+                0 4px 14px -8px rgba(42, 41, 37, 0.22);
+            width: 300px;
+            height: 300px;
+        }
+
+        .tile {
+            position: relative;
+            overflow: hidden;
+            background: var(--slot);
+        }
+
+        .tile::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border: 1px dashed rgba(42, 41, 37, 0.13);
+            transition: opacity 700ms ease;
+            pointer-events: none;
+        }
+
+        .tile.collected::after {
+            opacity: 0;
+        }
+
+        .ghost {
+            position: absolute;
+            inset: 0;
+            background-repeat: no-repeat;
+            background-size: 300% 500%;
+            opacity: 0.07;
+            filter: grayscale(1);
+            pointer-events: none;
+        }
+
+        body.no-ghost .ghost {
+            display: none;
+        }
+
+        .art {
+            position: absolute;
+            inset: 0;
+            background-repeat: no-repeat;
+            background-size: 300% 500%;
+            opacity: 0;
+            transform: scale(1.07);
+            transition:
+                opacity 900ms ease,
+                transform 1300ms cubic-bezier(0.16, 0.84, 0.24, 1);
+            will-change: opacity, transform;
+        }
+
+        .tile.collected .art {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .shimmer {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg,
+                    rgba(168, 137, 79, 0.75) 0%,
+                    rgba(201, 171, 116, 0.35) 55%,
+                    rgba(255, 255, 255, 0.10) 100%);
+        }
+
+        .tile.collected .shimmer {
+            animation: brassSweep 1200ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes brassSweep {
+            0% {
+                opacity: 0.9;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* ---------- Ledger ---------- */
+        .ledger {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* Progress counter: Chinese caption primary */
+        .progress {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .progress .num {
+            font-size: 32px;
+            line-height: 1;
+            color: var(--ink);
+            letter-spacing: 0.02em;
+        }
+
+        .progress .den {
+            font-size: 15px;
+            color: var(--faint);
+        }
+
+        .progress .cap {
+            margin-left: 8px;
+            text-align: left;
+            line-height: 1.1;
+        }
+
+        .progress .cap .cn-word {
+            display: block;
+            font-size: 14px;
+            letter-spacing: 0.22em;
+            text-indent: 0.22em;
+            color: var(--muted);
+        }
+
+        .progress .cap .en-word {
+            display: block;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 8px;
+            letter-spacing: 0.26em;
+            text-indent: 0.26em;
+            text-transform: uppercase;
+            color: var(--faint);
+            margin-top: 3px;
+        }
+
+        /* Per-part legend */
+        .parts {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .part {
+            display: grid;
+            grid-template-columns: 22px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 3px 0;
+        }
+
+        .part-num {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            color: var(--faint);
+            text-align: right;
+            transition: color 500ms ease;
+        }
+
+        .part-name {
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+            overflow: hidden;
+        }
+
+        .part-name .name-cn {
+            font-size: 14px;
+            letter-spacing: 0.18em;
+            color: var(--muted);
+            transition: color 500ms ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .part-name .name-en {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 8px;
+            letter-spacing: 0.24em;
+            text-indent: 0.24em;
+            text-transform: uppercase;
+            color: var(--faint);
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .part-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .part-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid var(--hairline);
+            transition: background 500ms ease, border-color 500ms ease;
+        }
+
+        .part-dot.filled {
+            background: var(--brass);
+            border-color: var(--brass);
+        }
+
+        .part.complete .part-num {
+            color: var(--brass);
+        }
+
+        .part.complete .name-cn {
+            color: var(--ink);
+        }
+
+        /* Hint line: Chinese primary */
+        .hint {
+            margin: 0;
+            min-height: 36px;
+            font-size: 13px;
+            letter-spacing: 0.16em;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .hint .hint-en {
+            display: block;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 8.5px;
+            letter-spacing: 0.26em;
+            text-indent: 0.26em;
+            text-transform: uppercase;
+            color: var(--faint);
+            margin-top: 4px;
+        }
+
+        /* Reset button: Chinese primary */
+        .reset {
+            appearance: none;
+            background: none;
+            border: none;
+            padding: 3px 4px;
+            font-family: inherit;
+            font-size: 11px;
+            letter-spacing: 0.22em;
+            text-indent: 0.22em;
+            color: var(--faint);
+            cursor: pointer;
+            border-bottom: 1px solid transparent;
+            transition: color 400ms ease, border-color 400ms ease;
+        }
+
+        .reset .reset-en {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 0.72em;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            margin-left: 6px;
+        }
+
+        .reset:hover,
+        .reset:focus-visible {
+            color: var(--brass);
+            border-bottom-color: var(--brass-lite);
+            outline: none;
+        }
+
+        @media (max-height: 720px) {
+            body {
+                padding: 16px 18px 14px;
+                gap: 10px;
+            }
+
+            .masthead h1 {
+                font-size: 22px;
+            }
+
+            .progress .num {
+                font-size: 26px;
+            }
+
+            .part-name .name-cn {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="masthead">
+        <h1>博物馆藏品游戏</h1>
+        <div class="rule"></div>
+        <p class="subtitle">Museum Collection Game</p>
+    </header>
+
+    <main>
+        <div class="board" id="board"></div>
+    </main>
+
+    <footer class="ledger">
+        <div class="progress">
+            <span class="num" id="piece-count">0</span>
+            <span class="den">/ 15</span>
+            <span class="cap">
+                <span class="cn-word">已修复</span>
+                <span class="en-word">Restored</span>
+            </span>
+        </div>
+
+        <div class="parts" id="parts"></div>
+
+        <p class="hint" id="hint">
+            扫描二维码以修复碎片
+            <span class="hint-en">Scan a code to restore a fragment</span>
+        </p>
+
+        <button class="reset" id="reset-btn" type="button">
+            重置进度 <span class="reset-en">Reset progress</span>
+        </button>
+    </footer>
+
+    <script>
+        /* ==================================================================
+           博物馆藏品游戏 · MUSEUM COLLECTION GAME
+           ------------------------------------------------------------------
+           ONE image is split into a 3 (columns) × 5 (rows) grid = 15 tiles.
+           Each ROW of the grid belongs to one "part" of the hunt:
+        
+               第一组 (1a, 1b, 1c)  —  金缮碗
+               第二组 (2a, 2b, 2c)  —  木工
+               第三组 (3a, 3b, 3c)  —  声音
+               第四组 (4a, 4b, 4c)  —  地图
+               第五组 (5a, 5b, 5c)  —  待定
+        
+           Each QR code opens this page with a ?stage=Na query, where N is the
+           part (1–5) and a–c is the letter of the piece inside that part.
+               index.html?stage=1a   -> 左上角
+               index.html?stage=3b   -> 第三行中间
+               index.html?stage=5c   -> 右下角
+           ================================================================== */
+
+
+        /* ------------------------------------------------------------------
+           配置 — 请修改此处  /  CONFIG — EDIT THESE
+           ------------------------------------------------------------------ */
+
+        /* *** 上传你自己的图片 ***  /  PUT YOUR OWN IMAGE HERE ***
+           将图片放入与此 HTML 相同的目录，并改为相对路径，例如：
+           const ARTWORK_URL = 'hunt.jpg';                      */
+        const ARTWORK_URL = 'img15.jpg';
+
+        /* 五个部分的中英文名称。数组顺序 = 棋盘上从上到下的行顺序。 */
+        const PARTS = [
+            { num: 'I', nameCN: '金缮碗', nameEN: 'Jinshang Bowl' },
+            { num: 'II', nameCN: '木工', nameEN: 'Carpentry' },
+            { num: 'III', nameCN: '声音', nameEN: 'Sound' },
+            { num: 'IV', nameCN: '地图', nameEN: 'Maps' },
+            { num: 'V', nameCN: '待定', nameEN: 'Untitled' }
+        ];
+
+        const PIECES_PER_PART = 3;                                 // a, b, c
+        const TOTAL_PIECES = PARTS.length * PIECES_PER_PART;    // = 15
+        const STORAGE_KEY = 'museum_collection_collected';     // localStorage key
+        const SHOW_GHOST = true;                              // 是否显示灰色预览
+
+
+        /* --- 以下内容一般无需修改  /  DO NOT EDIT BELOW --- */
+
+
+        /* ------------------------------------------------------------------
+           拼图块位置 — 根据网格自动计算
+           ------------------------------------------------------------------ */
+        const TILE_POSITIONS = [];
+        for (let row = 0; row < PARTS.length; row++) {
+            for (let col = 0; col < PIECES_PER_PART; col++) {
+                const xPct = (col / (PIECES_PER_PART - 1)) * 100;   // 0, 50, 100
+                const yPct = (row / (PARTS.length - 1)) * 100;    // 0, 25, 50, 75, 100
+                TILE_POSITIONS.push(`${xPct}% ${yPct}%`);
+            }
+        }
+
+
+        /* ------------------------------------------------------------------
+           1. 进度存储  /  PROGRESS STORAGE
+           ------------------------------------------------------------------ */
+
+        function getCollectedArray() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    const arr = JSON.parse(stored);
+                    if (Array.isArray(arr) && arr.length === TOTAL_PIECES) {
+                        return arr.map(Boolean);
+                    }
+                }
+            } catch (err) { /* fall through */ }
+            return new Array(TOTAL_PIECES).fill(false);
+        }
+
+        function saveCollectedArray(arr) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+            } catch (err) { /* storage may be unavailable */ }
+        }
+
+        function markCollected(index) {
+            if (index < 0 || index >= TOTAL_PIECES) return;
+            const arr = getCollectedArray();
+            if (!arr[index]) {
+                arr[index] = true;
+                saveCollectedArray(arr);
+            }
+        }
+
+
+        /* ------------------------------------------------------------------
+           2. 二维码 / URL 处理  /  QR / URL HANDLING
+           ------------------------------------------------------------------ */
+
+        /**
+         * 将 "1a" 或 "3c" 这样的 stage 字符串转换为 0–14 的拼块索引。
+         * 无法识别时返回 -1。
+         *
+         *   1a -> 0     2a -> 3     3a -> 6     4a -> 9     5a -> 12
+         *   1b -> 1     2b -> 4     3b -> 7     4b -> 10    5b -> 13
+         *   1c -> 2     2c -> 5     3c -> 8     4c -> 11    5c -> 14
+         */
+        function stageToIndex(stageStr) {
+            const match = String(stageStr).trim().toLowerCase().match(/^(\d+)[\s\-]*([a-z])$/);
+            if (!match) return -1;
+
+            const partIdx = parseInt(match[1], 10) - 1;      // 0-based part
+            const letterIdx = match[2].charCodeAt(0) - 97;     // 'a' -> 0
+
+            if (partIdx < 0 || partIdx >= PARTS.length) return -1;
+            if (letterIdx < 0 || letterIdx >= PIECES_PER_PART) return -1;
+
+            return partIdx * PIECES_PER_PART + letterIdx;
+        }
+
+        function handleURLScan() {
+            const params = new URLSearchParams(window.location.search);
+            const stageParam = params.get('stage');
+
+            if (stageParam) {
+                const idx = stageToIndex(stageParam);
+                if (idx >= 0) {
+                    markCollected(idx);
+                    removeStageParamFromURL();
+                }
+            }
+        }
+
+        function removeStageParamFromURL() {
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('stage');
+                const query = url.searchParams.toString();
+                const clean = url.pathname + (query ? '?' + query : '') + url.hash;
+                window.history.replaceState({}, document.title, clean);
+            } catch (err) { /* skip */ }
+        }
+
+
+        /* ------------------------------------------------------------------
+           3. 构建棋盘和列表  /  BUILD BOARD AND LEGEND
+           ------------------------------------------------------------------ */
+
+        const board = document.getElementById('board');
+        const partsEl = document.getElementById('parts');
+        const countEl = document.getElementById('piece-count');
+        const hintEl = document.getElementById('hint');
+
+        let artworkAspect = 1;
+        const tiles = [];
+        const partRows = [];
+
+        function buildBoard() {
+            if (!SHOW_GHOST) document.body.classList.add('no-ghost');
+
+            // ---- 15 个拼块 ----
+            for (let i = 0; i < TOTAL_PIECES; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.dataset.idx = String(i);
+
+                const ghost = document.createElement('div');
+                ghost.className = 'ghost';
+                ghost.style.backgroundPosition = TILE_POSITIONS[i];
+
+                const art = document.createElement('div');
+                art.className = 'art';
+                art.style.backgroundPosition = TILE_POSITIONS[i];
+
+                const shimmer = document.createElement('div');
+                shimmer.className = 'shimmer';
+
+                tile.appendChild(ghost);
+                tile.appendChild(art);
+                tile.appendChild(shimmer);
+                board.appendChild(tile);
+                tiles.push(tile);
+            }
+
+            // ---- 5 个图例行 ----
+            PARTS.forEach((part) => {
+                const row = document.createElement('div');
+                row.className = 'part';
+
+                const numEl = document.createElement('span');
+                numEl.className = 'part-num';
+                numEl.textContent = part.num;
+
+                const nameEl = document.createElement('span');
+                nameEl.className = 'part-name';
+                nameEl.innerHTML =
+                    `<span class="name-cn">${part.nameCN}</span>` +
+                    `<span class="name-en">${part.nameEN}</span>`;
+
+                const dotsEl = document.createElement('span');
+                dotsEl.className = 'part-dots';
+                for (let d = 0; d < PIECES_PER_PART; d++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'part-dot';
+                    dotsEl.appendChild(dot);
+                }
+
+                row.appendChild(numEl);
+                row.appendChild(nameEl);
+                row.appendChild(dotsEl);
+                partsEl.appendChild(row);
+                partRows.push(row);
+            });
+        }
+
+        function applyArtwork() {
+            document.querySelectorAll('.art, .ghost').forEach(layer => {
+                layer.style.backgroundImage = `url("${ARTWORK_URL}")`;
+            });
+        }
+
+        function sizeBoard() {
+            const maxWidth = Math.min(window.innerWidth - 52, 460);
+            const maxHeight = window.innerHeight * 0.50;
+
+            let w = maxWidth;
+            let h = w / artworkAspect;
+
+            if (h > maxHeight) {
+                h = maxHeight;
+                w = h * artworkAspect;
+            }
+
+            board.style.width = Math.round(w) + 'px';
+            board.style.height = Math.round(h) + 'px';
+        }
+
+
+        /* ------------------------------------------------------------------
+           4. 渲染  /  RENDER
+           ------------------------------------------------------------------ */
+
+        function render() {
+            const collected = getCollectedArray();
+            const count = collected.filter(Boolean).length;
+
+            tiles.forEach((tile, i) => {
+                tile.classList.toggle('collected', collected[i]);
+            });
+
+            partRows.forEach((row, partIdx) => {
+                const dots = row.querySelectorAll('.part-dot');
+                let partCount = 0;
+
+                for (let d = 0; d < PIECES_PER_PART; d++) {
+                    const tileIdx = partIdx * PIECES_PER_PART + d;
+                    const filled = collected[tileIdx];
+                    dots[d].classList.toggle('filled', filled);
+                    if (filled) partCount++;
+                }
+
+                row.classList.toggle('complete', partCount === PIECES_PER_PART);
+            });
+
+            countEl.textContent = String(count);
+
+            // 提示语：中文主，英文辅
+            if (count === 0) {
+                hintEl.innerHTML = '扫描二维码以修复碎片' +
+                    '<span class="hint-en">Scan a code to restore a fragment</span>';
+            } else if (count < TOTAL_PIECES) {
+                const missing = TOTAL_PIECES - count;
+                hintEl.innerHTML =
+                    `还缺 ${missing} 个碎片` +
+                    `<span class="hint-en">${missing} fragment${missing > 1 ? 's' : ''} still missing</span>`;
+            } else {
+                hintEl.innerHTML = '器皿已完整' +
+                    '<span class="hint-en">The vessel is whole again</span>';
+            }
+        }
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            if (window.confirm('确定要重置所有进度吗？  /  Reset all progress?')) {
+                saveCollectedArray(new Array(TOTAL_PIECES).fill(false));
+                render();
+            }
+        });
+
+
+        /* ------------------------------------------------------------------
+           5. 初始化  /  INITIALISE
+           ------------------------------------------------------------------ */
+
+        function init() {
+            buildBoard();
+
+            const probe = new Image();
+            probe.onload = () => {
+                artworkAspect = (probe.naturalWidth / probe.naturalHeight) || 1;
+                sizeBoard();
+            };
+            probe.onerror = () => {
+                artworkAspect = 1;
+                sizeBoard();
+                console.warn('Museum game: could not load artwork at', ARTWORK_URL);
+            };
+            probe.src = ARTWORK_URL;
+
+            applyArtwork();
+            sizeBoard();
+
+            handleURLScan();
+            render();
+        }
+
+        window.addEventListener('resize', sizeBoard);
+        window.addEventListener('orientationchange', () => setTimeout(sizeBoard, 120));
+
+        init();
+    </script>
+
+</body>
+
+</html>
