@@ -1,7 +1,3 @@
-Here is the updated README, reflecting that the current placeholder image is `img15.jpg` and that it can be changed. The QR code section now uses your actual hosted URL (`https://greggelong.github.io/jdzQR/`) and includes all 15 stage codes with the correct trailing slash. Both English and Chinese are provided.
-
----
-
 # Museum Collection Game – README
 
 ## English
